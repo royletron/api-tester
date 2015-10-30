@@ -196,6 +196,15 @@ describe('Get', function(){
           done();
         })
     });
+    it('throws 400 if I give a really honky date', function(done){
+      request
+        .get(path+"?student=darren&from="+encodeURIComponent(nextweek.format())+"&to=jan 37th 2015")
+        .end(function(err, res){
+          expect(err).to.not.equal(null);
+          expect(res.statusCode).to.equal(400);
+          done();
+        })
+    })
     it('throws 400 if the date to is less than the date from', function(done){
       request
         .get(path+"?student=darren&from="+encodeURIComponent(nextweek.format())+"&to="+encodeURIComponent(lastweek.format()))
