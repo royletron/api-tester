@@ -1,12 +1,19 @@
 var expect = require('chai').expect
 var request = require('request');
 var request = require('superagent');
+var argv = require('optimist').argv;
+var moment = require('moment');
 
-var path = process.env.KEY || "http://localhost:8080/v1/marks"
+
+var today = moment();
+var nextweek = today.add('days', 7);
+var lastweek = today.add('days', -7)
+
+var path = argv.path || "http://localhost:8080/v1/marks";
 
 
 describe('Post', function(){
-  it('Accepts a good worksheet', function(done){
+  it('accepts a good worksheet', function(done){
     request
       .post(path)
       .send({
@@ -27,7 +34,7 @@ describe('Post', function(){
         done();
       })
   })
-  it('Accepts a good homework', function(done){
+  it('accepts a good homework', function(done){
     request
       .post(path)
       .send({
@@ -44,7 +51,7 @@ describe('Post', function(){
         done();
       })
   })
-  it('Throws back a missing task_type', function(done){
+  it('throws 400 back a missing task_type', function(done){
     request
       .post(path)
       .send({
@@ -60,7 +67,7 @@ describe('Post', function(){
         done();
       })
   })
-  it('Throws back a missing student', function(done){
+  it('throws 400 back a missing student', function(done){
     request
       .post(path)
       .send({
@@ -76,7 +83,7 @@ describe('Post', function(){
         done();
       })
   })
-  it('Throws back a bad task type', function(done){
+  it('throws 400 back a bad task type', function(done){
     request
       .post(path)
       .send({
@@ -93,7 +100,7 @@ describe('Post', function(){
         done();
       })
   })
-  it('Throws back more marks than marks out of', function(done){
+  it('throws 400 back when there are more marks than marks out of for a given question', function(done){
     request
       .post(path)
       .send({
@@ -109,12 +116,46 @@ describe('Post', function(){
         expect(res.statusCode).to.equal(400);
         done();
       })
-  })
+  });
+  it('throws 400 back an error when a mark is negative', function(done){
+    request
+      .post(path)
+      .send({
+        "task_type": "homework",
+        "q1mark": -1,
+        "q2mark": 5,
+        "q1outof": 4,
+        "q2outof": 5,
+        "student": "darren"
+      })
+      .end(function(err, res){
+        expect(err).to.not.equal(null);
+        expect(res.statusCode).to.equal(400);
+        done();
+      })
+  });
+  it('throws 400 back an error when a mark out of is negative', function(done){
+    request
+      .post(path)
+      .send({
+        "task_type": "homework",
+        "q1mark": 1,
+        "q2mark": 5,
+        "q1outof": -4,
+        "q2outof": 5,
+        "student": "darren"
+      })
+      .end(function(err, res){
+        expect(err).to.not.equal(null);
+        expect(res.statusCode).to.equal(400);
+        done();
+      })
+  });
 });
 
 describe('Get', function(){
-  describe('Get results without a student', function(){
-    it('Should break because I havent provided a student', function(done){
+  describe('results without a student', function(){
+    it('should break because I havent provided a student', function(done){
       request
         .get(path)
         .end(function(err, res){
@@ -124,10 +165,10 @@ describe('Get', function(){
         });
     })
   });
-  describe('Get all results for Darren', function(){
-    it('Should return successfully', function(done){
+  describe('all results for Darren', function(){
+    it('should return successfully', function(done){
       request
-        .get(path+"?student=darrent")
+        .get(path+"?student=darren")
         .end(function(err, res){
           expect(err).to.equal(null);
           expect(res.statusCode).to.equal(200);
@@ -135,7 +176,7 @@ describe('Get', function(){
           done()
         });
     });
-    it('Should return more than 0 results', function(done){
+    it('should return more than 0 results', function(done){
       request
         .get(path+"?student=darren")
         .end(function(err, res){
@@ -145,5 +186,24 @@ describe('Get', function(){
           done();
         })
     })
+    it('should return 0 results for a date in the future', function(done){
+      request
+        .get(path+"?student=darren&from="+encodeURIComponent(nextweek.format())+"&to="+encodeURIComponent(nextweek.format()))
+        .end(function(err, res){
+          expect(err).to.equal(null);
+          expect(res.statusCode).to.equal(200);
+          expect(res.body.length).to.be(0);
+          done();
+        })
+    });
+    it('throws 400 if the date to is less than the date from', function(done){
+      request
+        .get(path+"?student=darren&from="+encodeURIComponent(nextweek.format())+"&to="+encodeURIComponent(lastweek.format()))
+        .end(function(err, res){
+          expect(err).to.not.equal(null);
+          expect(res.statusCode).to.equal(400);
+          done();
+        })
+    });
   })
 })
