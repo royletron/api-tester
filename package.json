@@ -15,6 +15,7 @@
     "chai": "^3.4.0",
     "mocha": "^2.3.3",
     "request": "^2.65.0",
-    "request-mocha": "^0.2.0"
+    "request-mocha": "^0.2.0",
+    "superagent": "^1.4.0"
   }
 }

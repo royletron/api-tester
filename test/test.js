@@ -2,7 +2,7 @@ var expect = require('chai').expect
 var request = require('request');
 var request = require('superagent');
 
-var path = "http://localhost:8080/v1/marks"
+var path = process.env.KEY || "http://localhost:8080/v1/marks"
 
 
 describe('Post', function(){
