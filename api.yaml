@@ -1,0 +1,148 @@
+swagger: '2.0'
+info:
+  title: MyMaths API
+  description: Get and submit homework/worksheet marks
+  version: 1.0.0
+host: api.mymaths.co.uk
+schemes:
+  - https
+basePath: /v1
+produces:
+  - application/json
+paths:
+  /marks:
+    post:
+      operationId: addMark
+      parameters:
+        - name: mark
+          in: body
+          description: Mark to add to the store
+          required: true
+          schema:
+            $ref: '#/definitions/NewMark'
+      responses:
+        200:
+          description: mark response
+          schema:
+            $ref: '#/definitions/Mark'
+        default:
+          description: unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    get:
+      summary: get Marks
+      description: |
+        The marks endpoint returns the marks for a given student. If a date range is specified marks should be limited to that range, if a date range is not specified it should return all marks.
+      parameters:
+        - name: student
+          in: query
+          description: Unique identifier for the student.
+          required: true
+          type: string
+        - name: from
+          in: query
+          description: The from of the date range
+          required: false
+          type: string
+        - name: to
+          in: query
+          description: The to of the date range
+          required: false
+          type: string
+      responses:
+        '200':
+          description: An array of marks
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Mark'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+definitions:
+  Error:
+    type: object
+    properties:
+      code:
+        type: string
+        description: '1 for bad request, 2 for server error'
+      message:
+        type: string
+        description: 'Simple message that explains the error'
+  NewMark:
+    required:
+      - student
+      - task_type
+      - q1mark
+      - q2mark
+      - q1outof
+      - q2outof
+    properties:
+      student:
+        type: string
+      task_type:
+        type: string
+      q1mark:
+        type: integer
+      q2mark:
+        type: integer
+      q3mark:
+        type: integer
+      q4mark:
+        type: integer
+      q1outof:
+        type: integer
+      q2outof:
+        type: integer
+      q3outof:
+        type: integer
+      q4outof:
+        type: integer
+  Mark:
+    type: object
+    properties:
+      mark_id:
+        type: string
+        description: 'Unique identifier representing a specific mark.'
+      date:
+        type: string
+        description: The date the mark was saved
+      task_type:
+        type: string
+        description: Whether this is a 'homework' or 'worksheet'.
+      q1mark:
+        type: integer
+        format: int32
+        description: The number of marks for question 1
+      q2mark:
+        type: integer
+        format: int32
+        description: The number of marks for question 2
+      q3mark:
+        type: integer
+        format: int32
+        description: The number of marks for question 3
+      q4mark:
+        type: integer
+        format: int32
+        description: The number of marks for question 4
+      q1outof:
+        type: integer
+        format: int32
+        description: The number of marks for question 1
+      q2outof:
+        type: integer
+        format: int32
+        description: The number of marks for question 2
+      q3outof:
+        type: integer
+        format: int32
+        description: The number of marks for question 3
+      q4outof:
+        type: integer
+        format: int32
+        description: The number of marks for question 4
+      student:
+        type: string
+        description: Unique identifier for the student
